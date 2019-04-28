@@ -1,0 +1,47 @@
+<%
+  entries = Watcher.
+    select("#{Watcher.table_name}.*, " +
+           "#{Board.table_name}.id as board_id, " +
+           "#{Board.table_name}.name as board_name, " +
+           "#{Project.table_name}.id as project_id, " +
+           "#{Project.table_name}.name as project_name, " +
+           "#{Message.table_name}.id as message_id, " +
+           "#{Message.table_name}.subject, " +
+           "#{Message.table_name}.updated_on, " +
+           "#{User.table_name}.id as user_id").
+    joins("JOIN #{Board.table_name} ON #{Board.table_name}.id = #{Watcher.table_name}.watchable_id and #{Watcher.table_name}.watchable_type = 'Board' " +
+          "JOIN #{Project.table_name} ON #{Project.table_name}.id = #{Board.table_name}.project_id " +
+          "LEFT JOIN #{Message.table_name} ON #{Message.table_name}.id = #{Board.table_name}.last_message_id " +
+          "LEFT JOIN #{User.table_name} ON #{User.table_name}.id = #{Message.table_name}.author_id ").
+    where(:user_id => User.current.id).
+    order("#{Project.table_name}.name asc, #{Board.table_name}.name asc").
+    to_a
+    users_by_id = entries.map{ |e| e.user_id }.uniq.map{ |i| User.find_by_id(i) }.map {|u| [u.id, u] }.to_h
+%>
+<h3><%= l(:my_watched_boards) %></h3>
+<% if entries.any? %>
+  <table class="list">
+  <thead><tr>
+  <th><%= l(:label_project) %></th>
+  <th><%= l(:label_board) %></th>
+  <th><%= l(:label_message_last) %></th>
+  <th></th>
+  </tr></thead>
+<tbody>
+<tbody>
+  <% entries.each do |entry| -%>
+    <tr>
+    <td class="name"><%= link_to(entry.project_name, {:controller => 'boards', :action => 'index', :project_id => entry.project_id}) %></td>
+    <td class="name"><%= link_to(h(entry.board_name), {:controller => 'boards', :action => 'show', :project_id => entry.project_id, :id => entry.board_id, :version => nil}) %></td>
+    <td>
+      <%= entry.subject ? link_to(h(entry.subject), {:controller => 'messages', :action => 'show', :board_id => entry.board_id, :id => entry.message_id}) : "" %>
+      <% if entry.updated_on %> - <% end %>
+      <%= entry.updated_on ? l(:label_updated_time_by, :author => link_to_user(users_by_id[entry.user_id]), :age => content_tag('span', distance_of_time_in_words(Time.now, entry.updated_on), :title => format_time(entry.updated_on))).html_safe : "" %>
+    </td>
+    </tr>
+  <% end %>
+</tbody>
+</table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>
