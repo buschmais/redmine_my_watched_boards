@@ -13,7 +13,7 @@
           "JOIN #{Project.table_name} ON #{Project.table_name}.id = #{Board.table_name}.project_id " +
           "LEFT JOIN #{Message.table_name} ON #{Message.table_name}.id = #{Board.table_name}.last_message_id " +
           "LEFT JOIN #{User.table_name} ON #{User.table_name}.id = #{Message.table_name}.author_id ").
-    where(:user_id => User.current.id).
+    where("#{Watcher.table_name}.user_id = ? AND #{Project.table_name}.status = ?", User.current.id, Project::STATUS_ACTIVE).
     order("#{Project.table_name}.name asc, #{Board.table_name}.name asc").
     to_a
     users_by_id = entries.map{ |e| e.user_id }.uniq.map{ |i| User.find_by_id(i) }.map {|u| [u.id, u] }.to_h
