@@ -33,7 +33,7 @@
     <tr>
     <td class="name"><%= link_to(entry.project_name, {:controller => 'boards', :action => 'index', :project_id => entry.project_id}) %></td>
     <td class="name"><%= link_to(h(entry.board_name), {:controller => 'boards', :action => 'show', :project_id => entry.project_id, :id => entry.board_id, :version => nil}) %></td>
-    <td>
+    <td class="subject">
       <%= entry.subject ? link_to(h(entry.subject), {:controller => 'messages', :action => 'show', :board_id => entry.board_id, :id => entry.message_id}) : "" %>
       <% if entry.updated_on %> - <% end %>
       <%= entry.updated_on ? l(:label_updated_time_by, :author => link_to_user(users_by_id[entry.user_id]), :age => content_tag('span', distance_of_time_in_words(Time.now, entry.updated_on), :title => format_time(entry.updated_on))).html_safe : "" %>
