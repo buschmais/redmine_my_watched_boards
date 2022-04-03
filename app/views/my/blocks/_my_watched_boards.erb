@@ -16,7 +16,7 @@
     where("#{Watcher.table_name}.user_id = ? AND #{Project.table_name}.status = ?", User.current.id, Project::STATUS_ACTIVE).
     order("#{Project.table_name}.name asc, #{Board.table_name}.name asc").
     to_a
-    users_by_id = entries.map{ |e| e.user_id }.uniq.map{ |i| User.find_by_id(i) }.map {|u| [u.id, u] }.to_h
+    users_by_id = entries.map{ |e| e.user_id }.reject{|i| i.nil? || i.empty? }.uniq.map{ |i| User.find_by_id(i) }.map { |u| [u.id, u] }.to_h
 %>
 <h3><%= l(:my_watched_boards) %></h3>
 <% if entries.any? %>
@@ -25,7 +25,6 @@
   <th><%= l(:label_project) %></th>
   <th><%= l(:label_board) %></th>
   <th><%= l(:label_message_last) %></th>
-  <th></th>
   </tr></thead>
 <tbody>
 <tbody>
